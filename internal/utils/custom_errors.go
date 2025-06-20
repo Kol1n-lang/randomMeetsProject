@@ -1,8 +1,10 @@
 package utils
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+
 	"randomMeetsProject/pkg/docs"
 )
 

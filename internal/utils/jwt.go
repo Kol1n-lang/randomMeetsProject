@@ -3,12 +3,13 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/golang-jwt/jwt/v5"
 	"randomMeetsProject/config"
 	"randomMeetsProject/internal/models/sql_models"
 	"randomMeetsProject/internal/models/validators"
-	"strings"
-	"time"
 )
 
 func NewTokens(user sql_models.User) (validators.JWTTokens, error) {
@@ -52,7 +53,6 @@ func VerifyToken(tokenString string, secretKey string) (jwt.MapClaims, error) {
 		}
 		return []byte(secretKey), nil
 	})
-
 	if err != nil {
 		return nil, err
 	}
@@ -84,7 +84,6 @@ func GetUserIDbyToken(tokenString string) (string, error) {
 		}
 		return []byte(secretKey), nil
 	})
-
 	if err != nil {
 		return "", err
 	}

@@ -3,10 +3,11 @@ package services
 import (
 	"context"
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"randomMeetsProject/internal/models/validators"
 	"randomMeetsProject/internal/repositories"
-	"time"
 )
 
 type MeetUpServiceInterface interface {
@@ -14,6 +15,7 @@ type MeetUpServiceInterface interface {
 	GetMeetUp(userID uuid.UUID) (*validators.MeetUp, error)
 	GetAllMeetUps(ctx context.Context) ([]validators.MeetUp, error)
 	DeleteMeetUp(userID uuid.UUID) error
+	UpdateMeetUp(meetUp *validators.PutMeetUp, userUUID uuid.UUID) error
 }
 
 type MeetUpService struct {
@@ -51,6 +53,8 @@ func (service *MeetUpService) GetMeetUp(userID uuid.UUID) (*validators.MeetUp, e
 		Description: meetEntity.Description,
 		Date:        dateString,
 		PeopleCount: meetEntity.PeopleCount,
+		PhotoURL:    meetEntity.User.PhotoURL,
+		//Contacts: meetEntity.User.TGContact
 	}
 
 	return &result, nil
@@ -84,6 +88,14 @@ func (service *MeetUpService) GetAllMeetUps(ctx context.Context) ([]validators.M
 
 func (service *MeetUpService) DeleteMeetUp(userID uuid.UUID) error {
 	err := service.repository.DeleteMeetUp(userID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service MeetUpService) UpdateMeetUp(meetUp *validators.PutMeetUp, userUUID uuid.UUID) error {
+	err := service.repository.UpdateMeetUp(meetUp, userUUID)
 	if err != nil {
 		return err
 	}

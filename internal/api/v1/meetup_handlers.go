@@ -1,16 +1,15 @@
 package v1
 
 import (
-	"errors"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"net/http"
+
 	"randomMeetsProject/internal/middleware"
 	"randomMeetsProject/internal/models/validators"
 	"randomMeetsProject/internal/services"
 	"randomMeetsProject/internal/utils"
 	"randomMeetsProject/pkg/docs"
-	"time"
 )
 
 func NewMeetsGroup(c *echo.Echo) {
@@ -21,6 +20,7 @@ func NewMeetsGroup(c *echo.Echo) {
 	meetsGroup.GET("/get-meetup", getMeetUp)
 	meetsGroup.GET("/get-all-meetups", getAllMeetUps)
 	meetsGroup.POST("/delete-meetup", deleteMeetUp)
+	meetsGroup.PATCH("/update-meetup", updateMeetUp)
 }
 
 func meetDocs(c echo.Context) error {
@@ -38,13 +38,9 @@ func createMeetUp(c echo.Context) error {
 	if err := meetUp.Validate(); err != nil {
 		return utils.CustomError(c, 422, err)
 	}
-	parsedDate, err := time.Parse("2006-01-02-15-04", meetUp.Date)
-	if err != nil {
-		return utils.CustomError(c, 422, err)
-	}
-	date := parsedDate.UTC().Add(-time.Hour * 3).Unix()
-	if date < time.Now().UTC().Add(time.Hour*1).Unix() {
-		return utils.CustomError(c, 422, errors.New("meet up is out of date"))
+	dateErr := utils.CheckDate(meetUp.Date)
+	if dateErr != nil {
+		return utils.CustomError(c, 422, dateErr)
 	}
 	meetService, err := services.NewMeetUpService()
 	if err != nil {
@@ -114,5 +110,40 @@ func deleteMeetUp(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, docs.Response{
 		Message: "Already delete MeetUps",
+	})
+}
+
+func updateMeetUp(c echo.Context) error {
+	token := utils.GetTokenFromAuthHeader(c.Request().Header.Get("Authorization"))
+	userID, err := utils.GetUserIDbyToken(token)
+	if err != nil {
+		return utils.CustomError(c, 500, err)
+	}
+	UserUUID, _ := uuid.Parse(userID)
+	meetUp := new(validators.PutMeetUp)
+	if err := c.Bind(meetUp); err != nil {
+		return utils.CustomError(c, 422, err)
+	}
+	if err := meetUp.Validate(); err != nil {
+		return utils.CustomError(c, 422, err)
+	}
+
+	if meetUp.Date != "" {
+		errDate := utils.CheckDate(meetUp.Date)
+		if errDate != nil {
+			return utils.CustomError(c, 422, errDate)
+		}
+	}
+
+	meetService, err := services.NewMeetUpService()
+	if err != nil {
+		return utils.CustomError(c, 500, err)
+	}
+	err = meetService.UpdateMeetUp(meetUp, UserUUID)
+	if err != nil {
+		return utils.CustomError(c, 500, err)
+	}
+	return c.JSON(http.StatusOK, docs.Response{
+		Message: meetUp,
 	})
 }
