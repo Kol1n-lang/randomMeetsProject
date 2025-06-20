@@ -2,11 +2,12 @@ package services
 
 import (
 	"errors"
+	"time"
+
 	"github.com/google/uuid"
 	"randomMeetsProject/internal/models/validators"
 	"randomMeetsProject/internal/repositories"
 	"randomMeetsProject/internal/utils"
-	"time"
 )
 
 type AuthServiceInterface interface {
@@ -14,6 +15,7 @@ type AuthServiceInterface interface {
 	LoginUser(user *validators.LoginUser) (validators.JWTTokens, error)
 	GetMe(userUUID uuid.UUID) (validators.User, error)
 	AddPhotoUrl(userUUID uuid.UUID, url string) error
+	ConfirmEmail(userUUID uuid.UUID) error
 }
 
 type AuthService struct {
@@ -36,6 +38,10 @@ func (service AuthService) RegisterUser(user *validators.LoginUser) (uuid.UUID, 
 	}
 
 	result, err := service.repository.CreateUser(user.Username, user.Email, user.Password)
+	newPublisher := NewPublisher("email-confirm", result.String()+" "+user.Email)
+	if newPublisher != nil {
+		return uuid.Nil, err
+	}
 	if err != nil {
 		return uuid.Nil, err
 	}
@@ -81,6 +87,14 @@ func (service AuthService) GetMe(userUUID uuid.UUID) (validators.User, error) {
 
 func (service AuthService) AddPhotoUrl(userUUID uuid.UUID, url string) error {
 	err := service.repository.AddPhotoUrl(userUUID, url)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (service AuthService) ConfirmEmail(userUUID uuid.UUID) error {
+	err := service.repository.CreateUserActive(userUUID)
 	if err != nil {
 		return err
 	}

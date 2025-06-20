@@ -1,8 +1,9 @@
 package sql_models
 
 import (
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type MeetUp struct {

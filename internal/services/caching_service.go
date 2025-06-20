@@ -3,10 +3,11 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"time"
+
 	"github.com/redis/go-redis/v9"
 	"randomMeetsProject/internal/models/validators"
 	"randomMeetsProject/pkg/database"
-	"time"
 )
 
 type CachingServiceInterface interface {

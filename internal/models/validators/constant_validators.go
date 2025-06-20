@@ -10,8 +10,9 @@ type JWTTokens struct {
 }
 
 type EmailPayload struct {
-	Email string `json:"email"`
-	Code  int    `json:"code"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Code     int    `json:"code"`
 }
 
 type PhotoURL struct {
@@ -21,4 +22,9 @@ type PhotoURL struct {
 func (url *PhotoURL) Validate() error {
 	validate := validator.New()
 	return validate.Struct(url)
+}
+
+func (emailPayload *EmailPayload) Validate() error {
+	validate := validator.New()
+	return validate.Struct(emailPayload)
 }

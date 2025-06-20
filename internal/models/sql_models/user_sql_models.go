@@ -11,4 +11,5 @@ type User struct {
 	Password []byte    `gorm:"type:bytea;not null"`
 	MeetUps  []MeetUp  `gorm:"foreignKey:UserID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:SET NULL"`
 	PhotoURL string    `gorm:"type:varchar(2047);"`
+	IsActive bool      `gorm:"type:boolean;not null"`
 }

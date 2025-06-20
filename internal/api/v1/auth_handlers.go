@@ -5,6 +5,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"net/http"
+
 	"randomMeetsProject/internal/models/validators"
 	"randomMeetsProject/internal/services"
 	"randomMeetsProject/internal/utils"
@@ -17,6 +18,7 @@ func AuthGroup(e *echo.Echo) {
 	authGroup.POST("/login", loginUser)
 	authGroup.GET("/me", me)
 	authGroup.POST("/add-photo-url", addPhotoUrl)
+	authGroup.GET("/confirm-email/", confirmUser)
 }
 
 func registerUser(c echo.Context) error {
@@ -24,16 +26,13 @@ func registerUser(c echo.Context) error {
 	if err := c.Bind(loginUser); err != nil {
 		return utils.CustomError(c, 422, err)
 	}
-
 	if err := loginUser.Validate(); err != nil {
 		return utils.CustomError(c, 422, err)
 	}
-
 	authService, err := services.NewAuthService()
 	if err != nil {
 		return utils.CustomError(c, 500, err)
 	}
-
 	result, err := authService.RegisterUser(loginUser)
 	if err != nil {
 		return utils.CustomError(c, 500, err)
@@ -67,6 +66,21 @@ func loginUser(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, docs.Response{
 		Message: jwt,
+	})
+}
+
+func confirmUser(c echo.Context) error {
+	userID := uuid.MustParse(c.QueryParam("user_id"))
+	authService, err := services.NewAuthService()
+	if err != nil {
+		return utils.CustomError(c, 500, err)
+	}
+	err = authService.ConfirmEmail(userID)
+	if err != nil {
+		return utils.CustomError(c, 500, err)
+	}
+	return c.JSON(http.StatusOK, docs.Response{
+		Message: "Вы успешно подтвепдили email",
 	})
 }
 

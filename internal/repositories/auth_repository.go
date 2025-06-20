@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"errors"
+
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 	"randomMeetsProject/internal/models/sql_models"
@@ -15,6 +16,7 @@ type AuthRepositoryInterface interface {
 	CheckUser(username, email, password string) (sql_models.User, error)
 	GetUserByUUID(uuid uuid.UUID) (*sql_models.User, *sql_models.MeetUp, error)
 	AddPhotoUrl(userUUID uuid.UUID, url string) error
+	CreateUserActive(userUUID uuid.UUID) error
 }
 
 type AuthRepository struct {
@@ -39,6 +41,7 @@ func (repo *AuthRepository) CreateUser(username, email, password string) (uuid.U
 		Username: username,
 		Email:    email,
 		Password: hashedPassword,
+		IsActive: false,
 	}
 	err = repo.db.Create(newUser).Error
 	if err != nil {
@@ -66,6 +69,9 @@ func (repo *AuthRepository) CheckUser(username, email, password string) (sql_mod
 		return sql_models.User{}, errors.New("invalid credentials")
 	}
 
+	if !user.IsActive {
+		return sql_models.User{}, errors.New("user is not active")
+	}
 	return user, nil
 }
 
@@ -84,6 +90,17 @@ func (repo *AuthRepository) AddPhotoUrl(userUUID uuid.UUID, url string) error {
 	var user sql_models.User
 	repo.db.Where("id = ?", userUUID).First(&user)
 	user.PhotoURL = url
+	err := repo.db.Save(&user).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (repo *AuthRepository) CreateUserActive(userUUID uuid.UUID) error {
+	var user sql_models.User
+	repo.db.Where("id = ?", userUUID).First(&user)
+	user.IsActive = true
 	err := repo.db.Save(&user).Error
 	if err != nil {
 		return err

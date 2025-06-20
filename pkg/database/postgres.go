@@ -2,9 +2,11 @@ package database
 
 import (
 	"fmt"
+	"log"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"log"
+
 	"randomMeetsProject/config"
 	"randomMeetsProject/internal/models/sql_models"
 )

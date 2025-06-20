@@ -1,10 +1,12 @@
 package main
 
 import (
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
 	"log"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+
 	"randomMeetsProject/config"
 	v1 "randomMeetsProject/internal/api/v1"
 	"randomMeetsProject/pkg/database"
@@ -61,5 +63,4 @@ func main() {
 	if err != nil {
 		log.Fatal("Error starting server " + err.Error())
 	}
-
 }

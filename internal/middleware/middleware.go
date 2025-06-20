@@ -1,11 +1,13 @@
 package middleware
 
 import (
-	"github.com/labstack/echo/v4"
 	"net/http"
+	"strings"
+
+	"github.com/labstack/echo/v4"
+
 	"randomMeetsProject/config"
 	"randomMeetsProject/internal/utils"
-	"strings"
 )
 
 //	func JWTMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
